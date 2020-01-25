@@ -1,0 +1,67 @@
+<div class="container mt-4 mb-4">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="margin:24px 0;">
+    <%= link_to "All Products", root_path, class: "navbar-brand" %>
+    <ul class="navbar-nav mr-auto"></ul>
+    <%= form_with url: search_products_path, method: :post, class: "form-inline my-2 my-lg-0 sort-by-form mr-4" do |f| %>
+      <%= f.text_field :country, value: params[:country], class: "hidden" %>
+      <%= f.text_field :price, value: params[:price], class: "hidden" %>
+      <%= f.text_field :price_option, value: params[:price_option], class: "hidden" %>
+      <%= f.text_field :q, value: params[:q], class: "hidden" %>
+      <%= f.select :sort_by, options_for_select(params[:q].present? ? Product::SORT_BY : Product::SORT_BY[1..-1], selected: Product::SORT_BY.select{|o| o[1] == params[:sort_by]}.flatten), prompt: "Sort By", class: 'form-control mr-sm-2 sort-by-dropdown' %>
+      <%= f.submit 'Search', class: 'btn btn-success my-2 my-sm-0 mr-sm-2 hidden' %>
+    <% end %>
+    <%= form_with url: search_products_path, method: :post, class: "form-inline my-2 my-lg-0" do |f| %>
+      <%= f.text_field :q, placeholder: 'Search', value:  params[:q], required: true, class: 'form-control mr-sm-2' %>
+      <%= f.submit 'Search', class: 'btn btn-success my-2 my-sm-0 mr-sm-2' %>
+    <% end %>
+    <%= link_to "Clear Search", root_path, class: "btn btn-light" if params[:q].present? %>
+  </nav>
+
+  <nav class="navbar navbar-expand-lg" style="margin:24px 0;">
+    <h4 class="m-0 mr-2">Filters: </h4>
+    <%= form_with url: search_products_path, method: :post, class: "form-inline my-2 my-lg-0" do |f| %>
+      <%= f.text_field :sort_by, value: params[:sort_by], class: "hidden" %>
+      <%= f.text_field :q, value: params[:q], class: "hidden" %>
+      <%= f.select :country, options_for_select(Product.all.map(&:country).uniq, selected: params[:country]), prompt: "Select Country", class: 'form-control mr-sm-2' %>
+      <%= f.text_field :price, placeholder: "Enter price", value: params[:price], class: "ml-4 mr-2" %>
+      <%= f.select :price_option, options_for_select(Product::PRICE_OPTIONS, selected: Product::PRICE_OPTIONS.select{|o| o[1] == params[:price_option]}.flatten), prompt: "Select Price Option", class: 'form-control' %>
+      <%= f.submit 'Apply Filters', class: 'btn btn-success my-2 my-sm-0 ml-4' %>
+    <% end %>
+    <%= link_to "Clear Filter", root_path, class: "btn btn-secondary ml-2" if params[:price].present? || params[:country].present? %>
+  </nav>
+
+  <div class="row mb-2">
+    <% @products.each do |product| %>
+      <div class="col-lg-4 col-md-6 col-12 mt-4" >
+        <div class="card card-body" data-price="<%= product.price %>" data-country="<%= product.country %>" data-tags="<%= product.tags %>" data-created-at="<%= product.created_at.strftime('%d %b, %Y %H:%M') %>" data-title="<%= product.title %>" data-description="<%= product.description %>">
+          <h4 class="card-title"><%= product.title.truncate(30) %></h4>
+          <p class="card-text"><span class="card-description"><%= product.description.truncate(82) %></span><br><small>Price: <%= product.price %></small></p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <%= paginate @products %>
+</div>
+
+<div class="modal fade" id="product_details" tabindex="-1" role="dialog" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productDetailsModalLabel"><strong></strong></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="description"><b>Description:</b> <span></span></p>
+        <p class="country"><b>Country:</b> <span></span></p>
+        <p class="price"><b>Price:</b> <span></span></p>
+        <p class="tags"><b>Tags:</b> <span></span></p>
+        <p class="created_at"><b>Created At:</b> <span></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
